@@ -1,67 +1,99 @@
-(function(){
+(function () {
     'use strict';
+    //nbarman
+    angular.module('ShoppingListCheckOff', [])
+    .controller('AddToListController', AddToListController )
+    .controller('ToBuyListController', ToBuyListController )
+    .provider('ShoppingListItemsService', ShoppingListItemsServiceProvider);
+    var imgStatus = "moneyface";
     
-    angular.module('ShoppingListCheckOff',ShoppingListCheckOff)
-    .controller('ToBuyController',ToBuyController)
-    .controller('AlreadyBoughtController',AlreadyBoughtController)
-    .service('ShoppingListCheckOffService',ShoppingListCheckOffService);
-
-    ShoppingListCheckOff.$inject = [];
-    function ShoppingListCheckOff(){
-        var app = this;
-        app.name = 'Shopping List Check Off';
-
-    } 
-
-    ToBuyController.$inject = ['ShoppingListCheckOffService'];
-    function ToBuyController(ShoppingListCheckOffService){
-        var toBuy = this;
-        toBuy.items = ShoppingListCheckOffService.getItems();
-        toBuy.buyItem = function(index){
-            ShoppingListCheckOffService.buyItem(index);
-        }
-
-    }
-
-
-
-
-    AlreadyBoughtController.$inject = ['ShoppingListCheckOffService'];
-    function AlreadyBoughtController(ShoppingListCheckOffService){
-        var bought = this;
-        bought.items = ShoppingListCheckOffService.getBoughtItems();
-    }
-
-
-    function ShoppingListCheckOffService(){
-        var service = this;
-        var toBuy = [
-            {name:'Cookies',quantity:'10'},
-            {name:'Chips',quantity:'5'},
-            {name:'Milk',quantity:'2'},
-            {name:'Bread',quantity:'1'},
-            {name:'Eggs',quantity:'12'}
-        ];
-        var bought = [];
-
-        service.buyItem = function(index){
-            var item = toBuy[index];
-            bought.push(item);
-            toBuy.splice(index,1);
-
-        }
-
-        service.getItems = function(){
-            return toBuy;
-        }
-
-        service.getBoughtItems = function(){
-            return bought;
-        }
-           
-        
+    var itemsList = [
+    
+            {
+              name : "Milk", quantity: 10
+            },
+            {
+              name : "Cookies", quantity: 5
+            },
+            {
+              name : "Chips", quantity: 4
+            },
+            {
+              name : "Wafers", quantity: 6
+            },
+            {
+              name : "Bismol", quantity: 8
+            },
+          ];
+    
+     
+    
+    
+    //Controller#1 ToBuyListController
+    ToBuyListController.$inject = ['$scope', 'ShoppingListItemsService'];
+    function ToBuyListController($scope, ShoppingListItemsService){
+        var toBuyCtrl = this;
+        toBuyCtrl.items = ShoppingListItemsService.getItemsOnList();
+        toBuyCtrl.addToBoughtList = function(index){
+        ShoppingListItemsService.itemBought(index);
+        var checklistStatus =  ShoppingListItemsService.setImgStatus();
+      };
     }
     
-
-
-})()
+    
+    // Controller#2 AddToListController
+    AddToListController.$inject = ['$scope', 'ShoppingListItemsService'];
+    function AddToListController($scope, ShoppingListItemsService){
+    var itemsAdded = this;
+    itemsAdded.items = ShoppingListItemsService.getItemsBought();
+    
+    }
+    
+    
+    //Service
+    function ShoppingListItemsService(items){
+    
+      var service  = this;
+      var itemsBought = [];
+      service.itemBought = function(index){
+          var item = {name : items[index].name, quantity : items[index].quantity};
+          //console.log(item);
+          itemsBought.push(item);
+          items.splice(index,1);
+        };
+    
+      service.getItemsBought = function(){
+        return itemsBought;
+      };
+    
+      service.getItemsOnList = function(){
+        return items;
+      };
+      service.setImgStatus = function(){
+                if(itemsList.length == 0){
+                        imgStatus = "thumbsup";
+    
+                      }
+                      return imgStatus;
+          }
+      service.getImgStatus = function(){
+         return imgStatus;
+      }
+    
+    }
+    
+    //Provider
+    function ShoppingListItemsServiceProvider(){
+    
+      var provider = this;
+      provider.items = itemsList;
+    
+            provider.$get = function(){
+            var shoppingListItems = new ShoppingListItemsService(provider.items);
+            return   shoppingListItems;
+          };
+    
+    }
+    
+    })();
+    
